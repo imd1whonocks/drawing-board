@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 
 import { StateProvider } from './context/State';
+import {DrawingBoard} from './pages'
 import './App.css';
 
 function App() {
@@ -8,7 +9,7 @@ function App() {
     <StateProvider>
       <Suspense fallback={'loading...'}>
         <div className="App">
-          Drawing Board
+          <DrawingBoard />
         </div>
       </Suspense>
     </StateProvider>
