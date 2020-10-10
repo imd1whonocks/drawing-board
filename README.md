@@ -5,7 +5,9 @@
 Drawing board can be implemented using both svg and canvas. SVG has DOM-like elements and Canvas has Javascript Drawing API. This project contain both of these implementations.
 - SVG drawing board can be accessed at `/svg` path.
 - Canvas drawing board can be accessed at `/canvas` path.  
+
 Board also works on phones and tablets.
+
 *By default SVG drawing board is opened at `/`*.
 
 ---
@@ -13,7 +15,8 @@ Board also works on phones and tablets.
 1. `Pen`: Makes permanent strokes with different width like 1, 3, 5 px.
 2. `Highlighter`: Make a stroke with width 5px and color opacity of 50%. It gets removed from canvas when user draw next stroke. 
 3. `Eraser`: Make strokes which removes the drawing part. *Default eraser width is 15px.*
-4. `Color picker tool`: Color of pen and highlighter stroke can be choosen. It can be different for different stroke.
+4. `Color picker`: Color of pen and highlighter stroke can be choosen. It can be different for different stroke.
+5. `Clear`: Clear all strokes from the board.
 ---
 ## Available Scripts
 ### `npm start`
