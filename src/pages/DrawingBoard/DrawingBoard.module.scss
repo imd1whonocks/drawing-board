@@ -26,6 +26,7 @@
         border: 1px dashed rgba(#000000, 0.2);
         border-radius: 10px;
         overflow: hidden;
+        touch-action: none;
         .canvas {
             transform-origin: 0 60px;
             width: 100%;

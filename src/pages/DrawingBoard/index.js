@@ -55,7 +55,6 @@ function DrawingBoard() {
     const handleTouchEnd = (e) => {
         console.log('handleTouchEnd')
         setIsDrawing(false);
-        e.preventDefault();
     }
     const handleTouchMove = (e) => {
         console.log('handleTouchMove')
@@ -63,6 +62,7 @@ function DrawingBoard() {
             const points = getCoordinatesFromTouchEvent(e)
             setDrawnLines(drawnLines.updateIn([drawnLines.size - 1], (el) => el.push(points)));
         }
+        e.preventDefault();
     }
     const handleToolClick = (tool) => {
         dispatch(actions.setTool(tool))
