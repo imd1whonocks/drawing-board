@@ -1,0 +1,44 @@
+.root {
+    display: flex;
+    background: #FFFFFF;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.1);
+    border-radius: 3px;
+    position: relative;
+    .tools {
+        border-radius: 3px;
+        border: 1px solid;
+        display: flex;
+        .tool {
+            padding: 5px;
+            border-right: 1px solid;
+            cursor: pointer;
+            transition: .3s;
+            &:first-of-type {
+                border-top-left-radius: 3px;
+                border-bottom-left-radius: 3px;
+            }
+            &:last-of-type {
+                border-right: none;
+                border-top-right-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+            &.selected, &:hover {
+                background: #e4e4e4;
+            }
+            .image {
+                height: 25px;
+            }
+        }
+    }
+    .colorpickerBox {
+        .picker {
+            outline: none;
+            background: transparent;
+            border-radius: 4px;
+            width: 36px;
+            height: 36px;
+            border: 1px solid;
+            margin-left: 10px;
+        }
+    }
+}
