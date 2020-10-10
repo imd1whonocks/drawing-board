@@ -1,7 +1,8 @@
+import { TOOLS } from '../../constants';
 import actionTypes from './types';
 
 export const initialState = {
-    selectedTool: null,
+    selectedTool: TOOLS.PEN,
     selectedColor: '#e66465', 
     selectedStrokeWidth: '1px', 
 }

@@ -1,13 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { List, Map } from 'immutable';
+
 import { useStateValue } from '../../context/State';
 import * as actions from '../../context/State/actions';
 import { Toolbar, DrawingSVG } from '../../components';
+import { TOOLS, ERASER_DEFAULT_WIDTH, HIGHLIGHTER_DEFAULT_WIDTH } from '../../constants';
 import styles from './DrawingBoard.module.scss';
 
 function DrawingBoard() {
     const [isDrawing, setIsDrawing] = useState(false);
-    const [drawnLines, setDrawnLines] = useState(List());
+    const [drawnLines, setDrawnLines] = useState([]);
     const [
         {
             selectedColor,
@@ -15,54 +16,51 @@ function DrawingBoard() {
             selectedStrokeWidth,
         }, 
         dispatch] = useStateValue();
-    // [[{x1,y1},{x2,y2}],[{x3,y3},{x4,y4}]]
-    // M x1 y1 D x2 y2 D x3 y3 D x4 y4
     const drawingArea = useRef();
     useEffect(() => {
         // mouseup can be outside our drawingArea
-        document.addEventListener('mouseup', handleMouseUp);
-        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('mouseup', handleDrawingOverEvent);
+        document.addEventListener('touchend', handleDrawingOverEvent);
         return () => {
-            document.removeEventListener('mouseup', handleMouseUp);
-            document.removeEventListener('touchend', handleTouchEnd);
+            document.removeEventListener('mouseup', handleDrawingOverEvent);
+            document.removeEventListener('touchend', handleDrawingOverEvent);
         }
     }, [])
-    const handleMouseDown = (e) => {
-        if (e.button !== 0) return;
-        console.log('handleMouseDown')
-        const points = getCoordinatesFromMouseEvent(e)
+    const handleDrawingStartEvent = (e) => {
+        if (e.type === 'mousedown' && e.button !== 0) return;
         setIsDrawing(true);
-        const newLine = List([points]);
-        setDrawnLines(drawnLines.push(newLine));
+        const points = getCoordinatesFromEvent(e);
+        const obj = {
+            tool: selectedTool,
+            strokeWidth: getStrokeWidthBasedOnTool(),
+            strokeColor: getStrokeColorBasedOnTool(),
+            strokeOpacity: selectedTool === TOOLS.HIGHLIGHTER ? 0.5 : 1,
+            points: [points]
+        }
+        const lastDrawnLine = drawnLines[drawnLines.length - 1];
+        if (lastDrawnLine?.tool === TOOLS.HIGHLIGHTER) {
+            drawnLines.splice(drawnLines.length - 1, 1)
+        }
+        setDrawnLines([...drawnLines, obj]);
     }
-    const handleMouseMove = (e) => {
-        if (e.button !== 0 || !isDrawing) return;
-        const points = getCoordinatesFromMouseEvent(e);
-        setDrawnLines(drawnLines.updateIn([drawnLines.size - 1], (el) => el.push(points)));
+    const handleDrawingEvent = (e) => {
+        if (!isDrawing || (e.type === 'mousemove' && e.button !== 0)) return;
+        const points = getCoordinatesFromEvent(e);
+        const drawnLinesClone = [...drawnLines];
+        const item = {...drawnLinesClone[drawnLines.length - 1]};
+        const pointsClone = [...item.points];
+        pointsClone.push(points);
+        item.points = pointsClone;
+        drawnLinesClone[drawnLines.length - 1] = item;
+        setDrawnLines(drawnLinesClone);
+        if (e.type === 'touchmove') {
+            e.preventDefault();
+        }
     }
-    const handleMouseUp = (e) => {
-        if (e.button !== 0) return;
+    const handleDrawingOverEvent = (e) => {
+        if (e.button && e.button !== 0) return;
         console.log('handleMouseUp')
         setIsDrawing(false);
-    }
-    const handleTouchStart = (e) => {
-        // console.log('handleTouchStart')
-        const points = getCoordinatesFromTouchEvent(e)
-        setIsDrawing(true);
-        const newLine = List([points]);
-        setDrawnLines(drawnLines.push(newLine));
-    }
-    const handleTouchEnd = (e) => {
-        console.log('handleTouchEnd')
-        setIsDrawing(false);
-    }
-    const handleTouchMove = (e) => {
-        console.log('handleTouchMove')
-        if (isDrawing) {
-            const points = getCoordinatesFromTouchEvent(e)
-            setDrawnLines(drawnLines.updateIn([drawnLines.size - 1], (el) => el.push(points)));
-        }
-        e.preventDefault();
     }
     const handleToolClick = (tool) => {
         dispatch(actions.setTool(tool))
@@ -73,13 +71,22 @@ function DrawingBoard() {
     const handleStrokeWidthChange = (width) => {
         dispatch(actions.setStrokeWidth(width))
     }
+    const getCoordinatesFromEvent = (e) => {
+        let points;
+        if (['mousedown', 'mousemove', 'mouseup'].includes(e.type)) {
+            points = getCoordinatesFromMouseEvent(e)
+        } else if (['touchdown', 'touchmove', 'touchstart'].includes(e.type)) {
+            points = getCoordinatesFromTouchEvent(e)
+        }
+        return points;
+    }
     const getCoordinatesFromMouseEvent = (e) => {
         const boundingRect = drawingArea.current.getBoundingClientRect();
         const obj = {
             x: e.clientX - boundingRect.left,
             y: e.clientY - boundingRect.top
         };
-        return Map(obj);
+        return obj;
     }
     const getCoordinatesFromTouchEvent = (e) => {
         const boundingRect = drawingArea.current.getBoundingClientRect();
@@ -87,7 +94,41 @@ function DrawingBoard() {
             x: e.touches[0]?.clientX - boundingRect.left,
             y: e.touches[0]?.clientY -  boundingRect.top
         };
-        return Map(obj);
+        return obj;
+    }
+    const getStrokeWidthBasedOnTool = () => {
+        let strokeWidth;
+        switch (selectedTool) {
+            case TOOLS.PEN:
+                strokeWidth = selectedStrokeWidth;
+                break;
+            case TOOLS.ERASER:
+                strokeWidth = ERASER_DEFAULT_WIDTH;  
+                break;
+            case TOOLS.HIGHLIGHTER:
+                strokeWidth = HIGHLIGHTER_DEFAULT_WIDTH;  
+                break;
+            default:
+                strokeWidth = '2px'
+                break;
+        }
+        return strokeWidth;
+    }
+    const getStrokeColorBasedOnTool = () => {
+        let strokeColor;
+        switch (selectedTool) {
+            case TOOLS.PEN:
+            case TOOLS.HIGHLIGHTER:
+                strokeColor = selectedColor;
+                break;
+            case TOOLS.ERASER:
+                strokeColor = '#FFF';  
+                break;
+            default:
+                strokeColor = '#000'
+                break;
+        }
+        return strokeColor;
     }
     return (
         <div className={styles.root}>
@@ -105,10 +146,10 @@ function DrawingBoard() {
             <div 
                 ref={drawingArea} 
                 className={styles.canvasWrapper}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
+                onMouseDown={handleDrawingStartEvent}
+                onMouseMove={handleDrawingEvent}
+                onTouchStart={handleDrawingStartEvent}
+                onTouchMove={handleDrawingEvent}
             >
                 <DrawingSVG lines={drawnLines}/>
             </div>
