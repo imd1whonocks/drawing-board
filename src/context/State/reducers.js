@@ -4,7 +4,7 @@ import actionTypes from './types';
 export const initialState = {
     selectedTool: TOOLS.PEN,
     selectedColor: '#e66465', 
-    selectedStrokeWidth: '1px', 
+    selectedStrokeWidth: '1', 
 }
 const reducer = (state, action) => {
     switch (action.type) {

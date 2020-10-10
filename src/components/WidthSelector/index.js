@@ -6,15 +6,15 @@ import styles from './WidthSelector.module.scss';
 const widthOptions = [
     {
         text: '1 px',
-        width: '1px'
+        width: '1'
     },
     {
         text: '3 px',
-        width: '3px'
+        width: '3'
     },
     {
         text: '5 px',
-        width: '5px'
+        width: '5'
     }
 ]
 export const WidthSelector = forwardRef((props, ref) => {
@@ -29,7 +29,7 @@ export const WidthSelector = forwardRef((props, ref) => {
                     onClick={() => handleWidthPicker(option)}
                     key={index}
                 >
-                    <div className={styles.widthOption} style={{height: option.width}}></div>
+                    <div className={styles.widthOption} style={{height: `${option.width}px`}}></div>
                 </div>
             ))}
         </div>
