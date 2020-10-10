@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 
-import { WidthSelector } from '../../components'
+import { WidthSelector } from '../../components';
 import { TOOLS } from '../../constants';
-import Pen from '../../assets/images/pen.svg'
-import Highlighter from '../../assets/images/highlighter.svg'
-import Eraser from '../../assets/images/eraser.svg'
+import Pen from '../../assets/images/pen.svg';
+import Highlighter from '../../assets/images/highlighter.svg';
+import Eraser from '../../assets/images/eraser.svg';
+import Clear from '../../assets/images/clear.svg';
 
 import styles from './Toolbar.module.scss';
 
@@ -34,6 +35,7 @@ function Toolbar({
     onChangeTool,
     onChangeColor,
     onChangeStrokeWidth,
+    onClearAll,
 }) {
     const [isWidthSelectorOpen, setIsWidthSelectorOpen] = useState(false);
     const widthSelectorRef = useRef(null)
@@ -55,6 +57,9 @@ function Toolbar({
         if (tool.type === TOOLS.PEN) {
             setIsWidthSelectorOpen(!isWidthSelectorOpen);
         }
+    }
+    const handleClearAll = (width) => {
+        onClearAll && onClearAll(width);
     }
     const handleClickOutside = (event) => {
         if (widthSelectorRef.current 
@@ -90,6 +95,9 @@ function Toolbar({
                     onChange={handleColorPicker}
                 />
                 <label htmlFor="strokeColor"></label>
+            </div>
+            <div className={styles.clearIcon} onClick={handleClearAll}>
+                <img src={Clear} alt={'clear'} className={styles.image}/>
             </div>
         </div>
     )

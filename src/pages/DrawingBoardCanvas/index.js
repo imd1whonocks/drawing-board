@@ -33,6 +33,7 @@ function DrawingBoardCanvas() {
             document.removeEventListener('mouseup', handleDrawingOverEvent);
             document.removeEventListener('touchend', handleDrawingOverEvent);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     useLayoutEffect(() => {
         const scale = window.devicePixelRatio;
@@ -124,6 +125,11 @@ function DrawingBoardCanvas() {
     const handleStrokeWidthChange = (width) => {
         dispatch(actions.setStrokeWidth(width))
     }
+    const handleClearBoard = () => {
+        clearCanvas();
+        clearHighlighterCanvas();
+        lastHighlighterPoints = {};
+    }
     const getCoordinatesFromEvent = (e) => {
         let points;
         if (['mousedown', 'mousemove', 'mouseup'].includes(e.type)) {
@@ -186,7 +192,11 @@ function DrawingBoardCanvas() {
     const getCanvasContext = () => {
         const ctx = canvasRef?.current?.getContext('2d');
         return ctx;
-    }   
+    }  
+    const clearCanvas = () => {
+        const ctx = getCanvasContext();
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    } 
     const clearHighlighterCanvas = () => {
         const highlighterCtx = getHighlighterCanvasContext();
         highlighterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -206,6 +216,7 @@ function DrawingBoardCanvas() {
                     onChangeTool={handleToolClick}
                     onChangeColor={handleColorPicker}
                     onChangeStrokeWidth={handleStrokeWidthChange}
+                    onClearAll={handleClearBoard}
                 />
             </div>
             <div 

@@ -59,7 +59,6 @@ function DrawingBoard() {
     }
     const handleDrawingOverEvent = (e) => {
         if (e.button && e.button !== 0) return;
-        console.log('handleMouseUp')
         setIsDrawing(false);
     }
     const handleToolClick = (tool) => {
@@ -70,6 +69,9 @@ function DrawingBoard() {
     }
     const handleStrokeWidthChange = (width) => {
         dispatch(actions.setStrokeWidth(width))
+    }
+    const handleClearBoard = () => {
+        setDrawnLines([]);
     }
     const getCoordinatesFromEvent = (e) => {
         let points;
@@ -141,6 +143,7 @@ function DrawingBoard() {
                     onChangeTool={handleToolClick}
                     onChangeColor={handleColorPicker}
                     onChangeStrokeWidth={handleStrokeWidthChange}
+                    onClearAll={handleClearBoard}
                 />
             </div>
             <div 
