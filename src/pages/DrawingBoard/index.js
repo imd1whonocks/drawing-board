@@ -133,7 +133,7 @@ function DrawingBoard() {
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <h4>Drawing Board</h4>
+                <h4>SVG Drawing Board</h4>
                 <Toolbar 
                     selectedColor={selectedColor}
                     selectedTool={selectedTool}

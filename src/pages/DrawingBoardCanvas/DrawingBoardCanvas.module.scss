@@ -28,6 +28,7 @@
         overflow: hidden;
         touch-action: none;
         position: relative;
+        cursor: crosshair;
         .canvas {
             z-index: 1;
         }
