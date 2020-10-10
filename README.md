@@ -1,7 +1,6 @@
 # [Drawing Board](https://github.com/imd1whonocks/drawing-board) 
----
 #### Hosted [here](https://drawing-board.imd1whonocks.com/) 
-######drawing-board.imd1whonocks.com.
+###### drawing-board.imd1whonocks.com.
 ---
 Drawing board can be implemented using both svg and canvas. SVG has DOM-like elements and Canvas has Javascript Drawing API. This project contain both of these implementations.
 - SVG drawing board can be accessed at `/svg` path.
