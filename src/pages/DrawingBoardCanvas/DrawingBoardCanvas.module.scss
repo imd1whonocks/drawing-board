@@ -27,9 +27,20 @@
         border-radius: 10px;
         overflow: hidden;
         touch-action: none;
-        // .canvas {
-        //     height: 100%;
-        //     width: 100%;
-        // }
+        position: relative;
+        .canvas {
+            z-index: 1;
+        }
+        .highlighterCanvas {
+            display: none;
+            z-index: 0;
+            &.visible {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                z-index: 2;
+            }
+        }
     }
 }

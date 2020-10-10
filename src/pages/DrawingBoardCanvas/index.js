@@ -7,8 +7,9 @@ import { Toolbar } from '../../components';
 import { TOOLS, ERASER_DEFAULT_WIDTH, HIGHLIGHTER_DEFAULT_WIDTH } from '../../constants';
 import { hexToRGB } from '../../utils'
 import styles from './DrawingBoardCanvas.module.scss';
-let lastPoint = {}
-const highLighterPoints = [];
+
+let lastHighlighterPoints = {};
+
 function DrawingBoardCanvas() {
     const [isDrawing, setIsDrawing] = useState(false);
     const [canvasWidth, setCanvasWidth] = useState(500);
@@ -22,6 +23,7 @@ function DrawingBoardCanvas() {
         dispatch] = useStateValue();
     const drawingArea = useRef();
     const canvasRef = useRef();
+    const highlighterCanvasRef = useRef();
     useEffect(() => {
         // mouseup can be outside our drawingArea
         document.addEventListener('mouseup', handleDrawingOverEvent);
@@ -33,8 +35,6 @@ function DrawingBoardCanvas() {
         }
     }, []);
     useLayoutEffect(() => {
-        // setCanvasWidth(window.innerHeight);
-        // setCanvasHeight(window.innerHeight);
         const scale = window.devicePixelRatio;
         // to solve blur on MBP screens
         setCanvasWidth(drawingArea.current.clientWidth * scale)
@@ -48,56 +48,61 @@ function DrawingBoardCanvas() {
         setIsDrawing(true);
         const points = getCoordinatesFromEvent(e);
         const ctx = getCanvasContext();
-        if (ctx) {
-            switch (selectedTool) {
-                case TOOLS.PEN:
+        const highlighterCtx = getHighlighterCanvasContext();
+        clearHighlighterCanvas();
+        switch (selectedTool) {
+            case TOOLS.PEN:
+                if (ctx) {
                     ctx.strokeStyle = getStrokeColorBasedOnTool();
                     ctx.lineWidth = getStrokeWidthBasedOnTool();
                     ctx.lineCap = 'round';
                     ctx.beginPath();
                     ctx.moveTo(points.x, points.y);
-                    break;
-                case TOOLS.ERASER: 
-                    ctx.clearRect(points.x, points.y, ERASER_DEFAULT_WIDTH, ERASER_DEFAULT_WIDTH);
-                    break;
-                case TOOLS.HIGHLIGHTER: 
-                    const color = hexToRGB(getStrokeColorBasedOnTool());
-                    ctx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
-                    ctx.lineWidth = getStrokeWidthBasedOnTool();
-                    ctx.lineCap = 'round';
-                    // lastPoint = points;
-                    highLighterPoints.push(points);
-                    break;
-                default:
-                    break;
-            }
+                }
+                break;
+            case TOOLS.ERASER: 
+                ctx &&  ctx.clearRect(points.x, points.y, ERASER_DEFAULT_WIDTH, ERASER_DEFAULT_WIDTH);
+                break;
+            case TOOLS.HIGHLIGHTER: 
+                const color = hexToRGB(getStrokeColorBasedOnTool());
+                if (highlighterCtx) {
+                    highlighterCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
+                    highlighterCtx.lineWidth = getStrokeWidthBasedOnTool();
+                    highlighterCtx.lineCap = 'round';
+                }
+                lastHighlighterPoints = points;
+                break;
+            default:
+                break;
+        }
+        if (ctx || highlighterCtx) {
         }
     }
     const handleDrawingEvent = (e) => {
         if (!isDrawing || (e.type === 'mousemove' && e.button !== 0)) return;
         const points = getCoordinatesFromEvent(e);
         const ctx = getCanvasContext();
-        if (ctx) {
-            switch (selectedTool) {
-                case TOOLS.PEN:
-                    ctx.lineTo(points.x, points.y);
-                    ctx.stroke()
-                    break;
-                case TOOLS.ERASER: 
-                    ctx.clearRect(points.x, points.y, ERASER_DEFAULT_WIDTH, ERASER_DEFAULT_WIDTH);
-                    break;
-                case TOOLS.HIGHLIGHTER:
-                    const lastPoint = highLighterPoints[highLighterPoints.length - 1];
-                    ctx.beginPath();
-                    ctx.moveTo(lastPoint?.x, lastPoint?.y)
-                    ctx.lineTo(points.x, points.y);
-                    ctx.stroke();
-                    ctx.closePath();
-                    highLighterPoints.push(points);
-                    break;
-                default:
-                    break;
-            }
+        const highlighterCtx = getHighlighterCanvasContext();
+        switch (selectedTool) {
+            case TOOLS.PEN:
+                ctx && ctx.lineTo(points.x, points.y);
+                ctx && ctx.stroke()
+                break;
+            case TOOLS.ERASER: 
+                ctx && ctx.clearRect(points.x, points.y, ERASER_DEFAULT_WIDTH, ERASER_DEFAULT_WIDTH);
+                break;
+            case TOOLS.HIGHLIGHTER:
+                if (highlighterCtx) {
+                    highlighterCtx.beginPath();
+                    highlighterCtx.moveTo(lastHighlighterPoints?.x, lastHighlighterPoints?.y);
+                    highlighterCtx.lineTo(points.x, points.y);
+                    highlighterCtx.stroke();
+                    highlighterCtx.closePath();
+                }
+                lastHighlighterPoints = points;
+                break;
+            default:
+                break;
         }
         if (e.type === 'touchmove') {
             e.preventDefault();
@@ -110,7 +115,8 @@ function DrawingBoardCanvas() {
         ctx.closePath();
     }
     const handleToolClick = (tool) => {
-        dispatch(actions.setTool(tool))
+        dispatch(actions.setTool(tool));
+        clearHighlighterCanvas();
     }
     const handleColorPicker = (color) => {
         dispatch(actions.setColor(color))
@@ -180,6 +186,14 @@ function DrawingBoardCanvas() {
     const getCanvasContext = () => {
         const ctx = canvasRef?.current?.getContext('2d');
         return ctx;
+    }   
+    const clearHighlighterCanvas = () => {
+        const highlighterCtx = getHighlighterCanvasContext();
+        highlighterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+    }
+    const getHighlighterCanvasContext = () => {
+        const ctx = highlighterCanvasRef?.current?.getContext('2d');
+        return ctx;
     }    
     return (
         <div className={styles.root}>
@@ -197,18 +211,23 @@ function DrawingBoardCanvas() {
             <div 
                 ref={drawingArea} 
                 className={styles.canvasWrapper}
+                onMouseDown={handleDrawingStartEvent}
+                onMouseMove={handleDrawingEvent}
+                onTouchStart={handleDrawingStartEvent}
+                onTouchMove={handleDrawingEvent}
             >
                 <canvas 
                     ref={canvasRef} 
                     width={canvasWidth}
                     height={canvasHeight}
                     className={cx(styles.canvas)}
-                    onMouseDown={handleDrawingStartEvent}
-                    onMouseMove={handleDrawingEvent}
-                    onTouchStart={handleDrawingStartEvent}
-                    onTouchMove={handleDrawingEvent}
-                >
-                </canvas>
+                />
+                <canvas 
+                    ref={highlighterCanvasRef} 
+                    width={canvasWidth}
+                    height={canvasHeight}
+                    className={cx(styles.highlighterCanvas, {[styles.visible]: selectedTool === TOOLS.HIGHLIGHTER})}
+                />
             </div>
         </div>
     )
