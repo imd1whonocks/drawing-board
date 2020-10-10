@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import { List, Map } from 'immutable';
 import { useStateValue } from '../../context/State';
 import * as actions from '../../context/State/actions';
-import { Toolbar } from '../../components';
+import { Toolbar, DrawingSVG } from '../../components';
 import styles from './DrawingBoard.module.scss';
 
 function DrawingBoard() {
@@ -110,18 +110,7 @@ function DrawingBoard() {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
             >
-                <svg id="canvas" crossOrigin='anonymous' className={styles.canvas}
-                    width="500" height="500"
-                    version="1.1" xmlns="http://www.w3.org/2000/svg"
-                >
-                    {drawnLines.map((line, index) => {
-                        const pathData = "M " +
-                        line
-                        .map(p => p.get('x') + ' ' + p.get('y'))
-                        .join(" L ");
-                        return <path d={pathData} key={index} />;
-                    })};
-                </svg>
+                <DrawingSVG lines={drawnLines}/>
             </div>
         </div>
     )
